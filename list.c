@@ -56,38 +56,45 @@ int list_length(list_t *l) {
   return i; 
 }
 
-void list_add_to_back(list_t *l, block_t *blk){  
-  node_t* newNode = node_alloc(blk);
-  newNode->next = NULL;
-  if(l->head == NULL){
+// Adds a block to the end of the linked list
+void list_add_to_back(list_t *l, block_t blk) {
+// Create a new node containing the block
+node_t newNode = node_alloc(blk);
+// Set the next pointer of the new node to NULL
+newNode->next = NULL;
+
+// If the linked list is empty, set the head of the linked list
+// to the new node
+if(l->head == NULL) {
     l->head = newNode;
-  }
-  else{
+}
+// If the linked list is not empty, find the last node in the linked
+// list and set its next pointer to the new node
+else {
     node_t *current = l->head;
-    while(current->next != NULL){
-      current = current->next;
+    while(current->next != NULL) {
+        current = current->next;
     }
     current->next = newNode;
-  }
+}
 }
 
-void list_add_to_front(list_t *l, block_t *blk){  
-  node_t* newNode = node_alloc(blk);
- 
-  newNode->next = l->head;
-  l->head = newNode;
+// Adds a block to the front of the linked list
+void list_add_to_front(list_t *l, block_t blk) {
+// Create a new node containing the block
+node_t newNode = node_alloc(blk);
+// Set the next pointer of the new node to the current head of the linked list
+newNode->next = l->head;
+// Set the head of the linked list to the new node
+l->head = newNode;
 }
 
-void list_add_at_index(list_t *l, block_t *blk, int index){
-  int i = 0;
-  
-  node_t *newNode = node_alloc(blk);
-  node_t *current = l->head;
+// Adds a block to the linked list at the specified index
+void list_add_at_index(list_t *l, block_t *blk, int index) {
+// Keep track of the current index and the current node in the linked list
+int i = 0;
+node_t *current = l->head;
 
-  if(index == 0){
-    newNode->next = l->head->next;
-    l->head = newNode;
-  }
   else if(index > 0){
     while(i < index && current->next != NULL){
       current = current->next;
@@ -153,17 +160,28 @@ void list_add_ascending_by_blocksize(list_t *l, block_t *newblk){
     prev = l->head;
     current = l->head->next;
   
-    while(current != NULL){
-      if (compareSize(newblk_size, current->blk)){
-        prev->next = newNode;
-        newNode->next = current;
-        return;
-      }
-      prev = current;
-      current = current->next;
-    }
-   prev->next = newNode;
-   return;
+    
+
+// Set the previous and current nodes to NULL
+prev = NULL;
+current = NULL;
+
+// Iterate through the linked list until the end is reached
+while(current != NULL){
+// If the size of the new block is less than the current block, insert the new node before the current node
+if (compareSize(newblk_size, current->blk)){
+prev->next = newNode;
+newNode->next = current;
+return;
+}
+// Otherwise, move to the next node in the list
+prev = current;
+current = current->next;
+}
+
+// If we reach the end of the list, insert the new node after the last node in the list
+prev->next = newNode;
+return;
 }
 
 void list_add_descending_by_blocksize(list_t *l, block_t *blk){
@@ -231,19 +249,27 @@ void list_coalese_nodes(list_t *l){
   if(l->head ==NULL || l->head->next == NULL){
     return;
   }
-  node_t *curr = l->head;
-  node_t *prev = l->head->next;
-  while (curr!= NULL) {
-    if(prev->blk->end + 1 == curr->blk->start){
-      prev->blk->end = curr->blk->end;
-      prev->next = curr->next;
-      node_free(curr);
-      curr = prev->next;
-    }
-    else {
-      prev = curr;
-      curr = curr->next;
-    }
+  
+
+// Set the current and previous nodes to the head of the linked list
+node_t *curr = l->head;
+node_t *prev = l->head->next;
+
+// Iterate through the linked list until the end is reached
+while (curr!= NULL) {
+// If the previous block and the current block are contiguous in memory, merge them into the previous block
+if(prev->blk->end + 1 == curr->blk->start){
+prev->blk->end = curr->blk->end;
+prev->next = curr->next;
+node_free(curr);
+curr = prev->next;
+}
+// Otherwise, move to the next node in the list
+else {
+prev = curr;
+curr = curr->next;
+}
+}
   }
 }
 
@@ -441,9 +467,6 @@ bool list_is_in_by_pid(list_t *l, int pid){
   return 0;
 }
   
-  
-
-
 /* Returns the index at which the given block of Size or greater appears. 
  * 
  */
@@ -454,16 +477,27 @@ int list_get_index_of_by_Size(list_t *l, int Size){
     return -1;
   }
   
-  while (current != NULL){
-   if (compareSize(Size,current->blk)){
-     return i;
-    }
-    current = current->next;
-    i++;
-  }
+  
 
-  return -1; 
+// Set the current node to NULL and initialize a counter to 0
+current = NULL;
+i = 0;
+
+// Iterate through the linked list until the end is reached
+while (current != NULL){
+// If the current block size is greater than or equal to the given size, return the current position in the list
+if (compareSize(Size,current->blk)){
+return i;
 }
+// Move to the next node in the list
+current = current->next;
+// Increment the counter
+i++;
+}
+
+// If no node with a large enough block size is found, return -1
+return -1;
+
                    
 /* Returns the index at which the pid appears. */
 int list_get_index_of_by_Pid(list_t *l, int pid){
