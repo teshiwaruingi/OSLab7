@@ -130,20 +130,25 @@ void deallocate_memory(list_t * alloclist, list_t * freelist, int pid, int polic
   }
  } 
 
-list_t* coalese_memory(list_t * list){
-  list_t *temp_list = list_alloc();
-  block_t *blk;
-  
-  while((blk = list_remove_from_front(list)) != NULL) {  // sort the list in ascending order by address
-        list_add_ascending_by_address(temp_list, blk);
-  }
-  
-  // try to combine physically adjacent blocks
-  
-  list_coalese_nodes(temp_list);
-        
-  return temp_list;
+
+
+// Allocate a new linked list called "temp_list"
+list_t *temp_list = list_alloc();
+
+// Loop through the blocks in "list" and add them to "temp_list" in ascending order by address
+while((blk = list_remove_from_front(list)) != NULL) {
+list_add_ascending_by_address(temp_list, blk);
 }
+
+// Attempt to merge any consecutive blocks that are contiguous in memory
+list_coalese_nodes(temp_list);
+
+// Return the updated linked list
+return temp_list;
+
+
+
+
 
 void print_list(list_t * list, char * message){
     node_t *current = list->head;
